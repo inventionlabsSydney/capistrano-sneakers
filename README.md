@@ -1,6 +1,6 @@
 # Capistrano::Sneakers
 
-TODO: Write a gem description
+[Sneakers](https://github.com/jondot/sneakers) integration Only for Capistrano3
 
 ## Installation
 
@@ -20,11 +20,20 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+## Usage
+```ruby
+# Capfile
+
+require 'capistrano/sneakers'
+```
+
+## Contributors
+
+- [NaixSpirit](https://github.com/NaixSpirit)
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/capistrano-sneakers/fork )
+1. Fork it ( https://github.com/NaixSpirit/capistrano-sneakers/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
