@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Capistrano::Sneakers::VERSION
   spec.authors       = ["Spirit"]
   spec.email         = ["neverlandxy.naix@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{Sneakers integration only for Capistrano3}
+  spec.description   = %q{Sneakers integration only for Capistrano3}
+  spec.homepage      = "https://github.com/NaixSpirit/capistrano-sneakers"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
