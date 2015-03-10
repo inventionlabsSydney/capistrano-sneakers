@@ -8,7 +8,7 @@ namespace :load do
     set :sneakers_log, -> { File.join(shared_path, 'log', 'sneakers.log') }
     # set :sneakers_timeout, -> { 10 }
     set :sneakers_role, -> { :app }
-    # set :sneakers_processes, -> { 1 }
+    set :sneakers_processes, -> { 1 }
     # Rbenv and RVM integration
     set :rbenv_map_bins, fetch(:rbenv_map_bins).to_a.concat(%w(sneakers))
     set :rvm_map_bins, fetch(:rvm_map_bins).to_a.concat(%w(sneakers))
