@@ -1,7 +1,11 @@
 require 'capistrano/sneakers/version'
 
-if Gem::Specification.find_by_name('capistrano').version >= Gem::Version.new('3.0.0')
-  load File.expand_path('../tasks/sidekiq.cap', __FILE__)
+cap_version = Gem::Specification.find_by_name('capistrano').version
+if cap_version >= Gem::Version.new('3.0.0')
+  #
+  # Load Tasks from sneakers "cap" file
+  # 
+  load File.expand_path('../tasks/sneakers.cap', __FILE__)
 else
-  raise Gem::LoadError, 'We are Sorry, this gem only for Capistrano3, please install Capistrano3 first.'
+  raise Gem::LoadError, "Capistrano-Sneakers requires capistrano version 3.0.0 or greater, version detected: #{cap_version}"
 end
