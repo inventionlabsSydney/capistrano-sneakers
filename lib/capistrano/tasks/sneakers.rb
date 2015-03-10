@@ -41,6 +41,7 @@ namespace :sneakers do
 
   def processes_pids
     pids = []
+    raise "sneaker_processes is nil class, cannot continue, please [set :sneaker_processes]" if fetch(:sneakers_processes).nil?
     fetch(:sneakers_processes).times do |idx|
       pids.push (idx.zero? && fetch(:sneakers_processes) <= 1) ?
                     fetch(:sneakers_pid) :
