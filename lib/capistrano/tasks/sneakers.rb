@@ -63,19 +63,23 @@ namespace :sneakers do
   end
 
   def stop_sneakers(pid_file)
-    if fetch(:stop_sneakers_in_background, fetch(:sneakers_run_in_background))
-      if fetch(:sneakers_use_signals)
-        background "kill -TERM `cat #{pid_file}`"
-      else
-        background :bundle, :exec, :sneakersctl, 'stop', "#{pid_file}", fetch(:sneakers_timeout)
-      end
+    if fetch(:sneakers_run_config) == true
+      execute "kill -SIGTERM `cat #{pid_file}`"
     else
-      execute :bundle, :exec, :sneakersctl, 'stop', "#{pid_file}", fetch(:sneakers_timeout)
+      if fetch(:stop_sneakers_in_background, fetch(:sneakers_run_in_background))
+        if fetch(:sneakers_use_signals)
+          background "kill -TERM `cat #{pid_file}`"
+        else
+          background :bundle, :exec, :sneakersctl, 'stop', "#{pid_file}", fetch(:sneakers_timeout)
+        end
+      else
+        execute :bundle, :exec, :sneakersctl, 'stop', "#{pid_file}", fetch(:sneakers_timeout)
+      end
     end
   end
 
   def quiet_sneakers(pid_file)
-    if fetch(:sneakers_use_signals)
+    if fetch(:sneakers_use_signals) || fetch(:sneakers_run_config)
       background "kill -USR1 `cat #{pid_file}`"
     else
       begin
@@ -88,7 +92,6 @@ namespace :sneakers do
   end
 
   def start_sneakers(pid_file, idx = 0)
-    args = []
     if fetch(:sneakers_run_config) == true
       # Use sneakers configuration prebuilt in
       raise "[ set :workers, ['worker1', 'workerN'] ] not configured properly, please configure the workers you wish to use" if fetch(:sneakers_workers).nil? or fetch(:sneakers_workers) == false or !fetch(:sneakers_workers).kind_of? Array
