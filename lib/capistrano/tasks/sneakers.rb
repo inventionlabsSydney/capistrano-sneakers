@@ -99,9 +99,7 @@ namespace :sneakers do
       info "Starting the sneakers processes"
       #workers.each do |worker|
 
-      raise "Boot file not set, please configure [set :sneakers_boot_file]" if fetch(:sneakers_boot_file) == false
       with rails_env: :production, workers: workers do 
-        #execute :bundle, :exec, :sneakers, :work, workers, "--require=#{fetch(:sneakers_boot_file)}"
         rake 'sneakers:run'
       end
       #execute :bundle, :exec, :sneakers, args.compact.join(' ')
