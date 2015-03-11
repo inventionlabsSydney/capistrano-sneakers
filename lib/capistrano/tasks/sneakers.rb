@@ -93,7 +93,7 @@ namespace :sneakers do
       raise "[ set :workers, ['worker1', 'workerN'] ] not configured properly, please configure the workers you wish to use" if fetch(:sneakers_workers).nil? or fetch(:sneakers_workers) == false or !fetch(:sneakers_workers).kind_of? Array
 
       workers = fetch(:sneakers_workers).compact.join(',')
-      execute :export, workers #export this to environmental variable
+      run "cmd", :env => { 'WORKERS', workers } #export this to environmental variable
       info "Starting the sneakers processes"
       #execute :bundle, :exec, :sneakers, args.compact.join(' ')
     else
