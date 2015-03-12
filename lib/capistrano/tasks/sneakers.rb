@@ -102,7 +102,7 @@ namespace :sneakers do
       info "Starting the sneakers processes"
       #workers.each do |worker|
 
-      with rails_env: :production, workers: workers do 
+      with rails_env: fetch(:stage), workers: workers do 
         rake 'sneakers:run'
       end
       #execute :bundle, :exec, :sneakers, args.compact.join(' ')
