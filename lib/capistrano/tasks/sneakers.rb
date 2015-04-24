@@ -32,8 +32,8 @@ end
 
 namespace :sneakers do
 
-  def for_each_process(reverse = false, &block)
-    pids = processes_pids
+  def for_each_sneakers_process(reverse = false, &block)
+    pids = processes_sneakers_pids
     pids.reverse! if reverse
     pids.each_with_index do |pid_file, idx|
       within current_path do
@@ -42,7 +42,7 @@ namespace :sneakers do
     end
   end
 
-  def processes_pids
+  def processes_sneakers_pids
     pids = []
     raise "sneaker_processes is nil class, cannot continue, please [set :sneaker_processes]" if fetch(:sneakers_processes).nil?
     fetch(:sneakers_processes).times do |idx|
@@ -54,11 +54,11 @@ namespace :sneakers do
     pids
   end
 
-  def pid_process_exists?(pid_file)
-    pid_file_exists?(pid_file) and test(*("kill -0 $( cat #{pid_file} )").split(' '))
+  def sneakers_pid_process_exists?(pid_file)
+    sneakers_pid_file_exists?(pid_file) and test(*("kill -0 $( cat #{pid_file} )").split(' '))
   end
 
-  def pid_file_exists?(pid_file)
+  def sneakers_pid_file_exists?(pid_file)
     test(*("[ -f #{pid_file} ]").split(' '))
   end
 
@@ -148,8 +148,8 @@ namespace :sneakers do
   task :quiet do
     on roles fetch(:sneakers_role) do
       if test("[ -d #{current_path} ]") # fixes #11
-        for_each_process(true) do |pid_file, idx|
-          if pid_process_exists?(pid_file)
+        for_each_sneakers_process(true) do |pid_file, idx|
+          if sneakers_pid_process_exists?(pid_file)
             quiet_sneakers(pid_file)
           end
         end
@@ -161,8 +161,8 @@ namespace :sneakers do
   task :stop do
     on roles fetch(:sneakers_role) do
       if test("[ -d #{current_path} ]")
-        for_each_process(true) do |pid_file, idx|
-          if pid_process_exists?(pid_file)
+        for_each_sneakers_process(true) do |pid_file, idx|
+          if sneakers_pid_process_exists?(pid_file)
             stop_sneakers(pid_file)
           end
         end
@@ -173,8 +173,8 @@ namespace :sneakers do
   desc 'Start sneakers'
   task :start do
     on roles fetch(:sneakers_role) do
-      for_each_process do |pid_file, idx|
-        start_sneakers(pid_file, idx) unless pid_process_exists?(pid_file)
+      for_each_sneakers_process do |pid_file, idx|
+        start_sneakers(pid_file, idx) unless sneakers_pid_process_exists?(pid_file)
       end
     end
   end
@@ -188,8 +188,8 @@ namespace :sneakers do
   desc 'Rolling-restart sneakers'
   task :rolling_restart do
     on roles fetch(:sneakers_role) do
-      for_each_process(true) do |pid_file, idx|
-        if pid_process_exists?(pid_file)
+      for_each_sneakers_process(true) do |pid_file, idx|
+        if sneakers_pid_process_exists?(pid_file)
           stop_sneakers(pid_file)
         end
         start_sneakers(pid_file, idx)
@@ -200,9 +200,9 @@ namespace :sneakers do
   # Delete any pid file not in use
   task :cleanup do
     on roles fetch(:sneakers_role) do
-      for_each_process do |pid_file, idx|
-        if pid_file_exists?(pid_file)
-          execute "rm #{pid_file}" unless pid_process_exists?(pid_file)
+      for_each_sneakers_process do |pid_file, idx|
+        if sneakers_pid_file_exists?(pid_file)
+          execute "rm #{pid_file}" unless sneakers_pid_process_exists?(pid_file)
         end
       end
     end
@@ -213,8 +213,8 @@ namespace :sneakers do
   task :respawn do
     invoke 'sneakers:cleanup'
     on roles fetch(:sneakers_role) do
-      for_each_process do |pid_file, idx|
-        unless pid_file_exists?(pid_file)
+      for_each_sneakers_process do |pid_file, idx|
+        unless sneakers_pid_file_exists?(pid_file)
           start_sneakers(pid_file, idx)
         end
       end
