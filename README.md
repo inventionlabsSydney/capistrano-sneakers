@@ -25,6 +25,8 @@ Or install it yourself as:
 # Capfile
 
 require 'capistrano/sneakers'
+# Include monit tasks
+# require 'capistrano/sneakers/monit'
 ```
 
 ## Contributors
