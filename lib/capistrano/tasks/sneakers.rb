@@ -80,7 +80,7 @@ namespace :sneakers do
 
   def quiet_sneakers(pid_file)
     if fetch(:sneakers_use_signals) || fetch(:sneakers_run_config)
-      background :kill, "-USR1 `cat #{pid_file}`"
+      execute :kill, "-USR1 `cat #{pid_file}`"
     else
       begin
         execute :bundle, :exec, :sneakersctl, 'quiet', "#{pid_file}"
