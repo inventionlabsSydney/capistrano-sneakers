@@ -131,9 +131,9 @@ namespace :sneakers do
       end
 
       if fetch(:start_sneakers_in_background, fetch(:sneakers_run_in_background))
-        background :bundle, :exec, :sneakers, args.compact.join(' ')
+        background :bundle, :exec, :sneakers, :work, args.compact.join(' ')
       else
-        execute :bundle, :exec, :sneakers, args.compact.join(' ')
+        execute :bundle, :exec, :sneakers, :work, args.compact.join(' ')
       end
     end
   end
