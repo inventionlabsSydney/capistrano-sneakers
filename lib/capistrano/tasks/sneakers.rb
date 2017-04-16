@@ -107,6 +107,7 @@ namespace :sneakers do
       end
       #execute :bundle, :exec, :sneakers, args.compact.join(' ')
     else
+      args = []
       # Using custom sneakers setup
       args.push "--index #{idx}"
       args.push "--pidfile #{pid_file}"
