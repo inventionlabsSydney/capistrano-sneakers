@@ -97,12 +97,12 @@ namespace :sneakers do
       raise "[ set :workers, ['worker1', 'workerN'] ] not configured properly, please configure the workers you wish to use" if fetch(:sneakers_workers).nil? or fetch(:sneakers_workers) == false or !fetch(:sneakers_workers).kind_of? Array
 
       workers = fetch(:sneakers_workers).compact.join(',')
-      
+
       #run "cmd", env: { 'WORKERS' => workers } #export this to environmental variable
       info "Starting the sneakers processes"
       #workers.each do |worker|
 
-      with rails_env: fetch(:sneakers_env), workers: workers do 
+      with rails_env: fetch(:sneakers_env), workers: workers do
         rake 'sneakers:run'
       end
       #execute :bundle, :exec, :sneakers, args.compact.join(' ')
