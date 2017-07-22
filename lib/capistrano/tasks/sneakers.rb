@@ -189,6 +189,7 @@ namespace :sneakers do
         end
       end
     end
+    Rake::Task["sneakers:stop"].reenable
   end
 
   desc 'Start sneakers'
