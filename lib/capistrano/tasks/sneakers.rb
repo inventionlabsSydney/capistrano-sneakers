@@ -189,7 +189,6 @@ namespace :sneakers do
         end
       end
     end
-    Rake::Task["sneakers:stop"].reenable
   end
 
   desc 'Start sneakers'
@@ -205,7 +204,7 @@ namespace :sneakers do
 
   desc 'Restart sneakers'
   task :restart do
-    invoke 'sneakers:stop'
+    invoke! 'sneakers:stop'
     invoke 'sneakers:start'
   end
 
