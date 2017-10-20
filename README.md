@@ -1,6 +1,6 @@
 # Capistrano::Sneakers
 
-[Sneakers](https://github.com/jondot/sneakers) integration Only for Capistrano3
+[Sneakers](https://github.com/jondot/sneakers) integration **only** for Capistrano 3
 
 ## Installation
 
