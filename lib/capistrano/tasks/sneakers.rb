@@ -109,17 +109,17 @@ namespace :sneakers do
     else
       args = []
       # Using custom sneakers setup
-      args.push "--index #{idx}"
-      args.push "--pidfile #{pid_file}"
-      args.push "--environment #{fetch(:sneakers_env)}"
-      args.push "--logfile #{fetch(:sneakers_log)}" if fetch(:sneakers_log)
+      # args.push "--index #{idx}"
+      args.push "--pid-path #{pid_file}"
+      # args.push "--environment #{fetch(:sneakers_env)}"
+      # args.push "--logfile #{fetch(:sneakers_log)}" if fetch(:sneakers_log)
       args.push "--require #{fetch(:sneakers_require)}" if fetch(:sneakers_require)
-      args.push "--tag #{fetch(:sneakers_tag)}" if fetch(:sneakers_tag)
-      Array(fetch(:sneakers_queue)).each do |queue|
-        args.push "--queue #{queue}"
-      end
-      args.push "--config #{fetch(:sneakers_config)}" if fetch(:sneakers_config)
-      args.push "--concurrency #{fetch(:sneakers_concurrency)}" if fetch(:sneakers_concurrency)
+      # args.push "--tag #{fetch(:sneakers_tag)}" if fetch(:sneakers_tag)
+      # Array(fetch(:sneakers_queue)).each do |queue|
+      #   args.push "--queue #{queue}"
+      # end
+      # args.push "--config #{fetch(:sneakers_config)}" if fetch(:sneakers_config)
+      # args.push "--concurrency #{fetch(:sneakers_concurrency)}" if fetch(:sneakers_concurrency)
       # use sneakers_options for special options
       args.push fetch(:sneakers_options) if fetch(:sneakers_options)
 
@@ -127,13 +127,13 @@ namespace :sneakers do
         args.push '>/dev/null 2>&1 &'
         warn 'Since JRuby doesn\'t support Process.daemon, sneakers will not be running as a daemon.'
       else
-        args.push '--daemon'
+        args.push '--daemonize=DAEMONIZE'
       end
 
       if fetch(:start_sneakers_in_background, fetch(:sneakers_run_in_background))
-        background :bundle, :exec, :sneakers, args.compact.join(' ')
+        background :bundle, :exec, :sneakers :work, args.compact.join(' ')
       else
-        execute :bundle, :exec, :sneakers, args.compact.join(' ')
+        execute :bundle, :exec, :sneakers, :work, args.compact.join(' ')
       end
     end
   end
