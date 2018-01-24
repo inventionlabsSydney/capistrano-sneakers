@@ -1,5 +1,4 @@
 namespace :load do
-
   task :defaults do
     set :sneakers_default_hooks, -> { true }
 
@@ -18,9 +17,7 @@ namespace :load do
   end
 end
 
-
 namespace :deploy do
-
   before :starting, :check_sneakers_hooks do
     invoke 'sneakers:add_default_hooks' if fetch(:sneakers_default_hooks)
   end
@@ -31,7 +28,6 @@ namespace :deploy do
 end
 
 namespace :sneakers do
-
   def for_each_sneakers_process(reverse = false, &block)
     pids = processes_sneakers_pids
     pids.reverse! if reverse
@@ -155,9 +151,9 @@ namespace :sneakers do
   end
 
   task :add_default_hooks do
-    after 'deploy:starting', 'sneakers:quiet'
-    after 'deploy:updated', 'sneakers:stop'
-    after 'deploy:reverted', 'sneakers:stop'
+    after 'deploy:starting',  'sneakers:quiet'
+    after 'deploy:updated',   'sneakers:stop'
+    after 'deploy:reverted',  'sneakers:stop'
     after 'deploy:published', 'sneakers:start'
   end
 
@@ -196,7 +192,9 @@ namespace :sneakers do
     on roles fetch(:sneakers_role) do |role|
       as_sneakers_user(role) do
         for_each_sneakers_process do |pid_file, idx|
-          start_sneakers(pid_file, idx) unless sneakers_pid_process_exists?(pid_file)
+          unless sneakers_pid_process_exists?(pid_file)
+            start_sneakers(pid_file, idx)
+          end
         end
       end
     end
