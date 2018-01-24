@@ -205,6 +205,9 @@ namespace :sneakers do
   desc 'Restart sneakers'
   task :restart do
     invoke! 'sneakers:stop'
+    # It takes some time to stop serverengine processes and cleanup pidfiles.
+    # We should wait until pidfiles will be removed.
+    sleep 5
     invoke 'sneakers:start'
   end
 
