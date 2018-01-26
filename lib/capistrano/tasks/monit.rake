@@ -63,5 +63,24 @@ namespace :sneakers do
     def sudo_if_needed(command)
       fetch(:sneakers_monit_use_sudo) ? sudo(command) : execute(command)
     end
+
+    def template_sneakers(from, to, role)
+      [
+        File.join('lib', 'capistrano', 'templates', "#{from}-#{role.hostname}-#{fetch(:stage)}.rb"),
+        File.join('lib', 'capistrano', 'templates', "#{from}-#{role.hostname}.rb"),
+        File.join('lib', 'capistrano', 'templates', "#{from}-#{fetch(:stage)}.rb"),
+        File.join('lib', 'capistrano', 'templates', "#{from}.rb.erb"),
+        File.join('lib', 'capistrano', 'templates', "#{from}.rb"),
+        File.join('lib', 'capistrano', 'templates', "#{from}.erb"),
+        File.expand_path("../../templates/#{from}.rb.erb", __FILE__),
+        File.expand_path("../../templates/#{from}.erb", __FILE__)
+      ].each do |path|
+        if File.file?(path)
+          erb = File.read(path)
+          upload! StringIO.new(ERB.new(erb).result(binding)), to
+          break
+        end
+      end
+    end
   end
 end

@@ -1,5 +1,4 @@
 namespace :load do
-
   task :defaults do
     set :sneakers_default_hooks, -> { true }
 
@@ -18,9 +17,7 @@ namespace :load do
   end
 end
 
-
 namespace :deploy do
-
   before :starting, :check_sneakers_hooks do
     invoke 'sneakers:add_default_hooks' if fetch(:sneakers_default_hooks)
   end
@@ -31,7 +28,6 @@ namespace :deploy do
 end
 
 namespace :sneakers do
-
   def for_each_sneakers_process(reverse = false, &block)
     pids = processes_sneakers_pids
     pids.reverse! if reverse
@@ -155,9 +151,9 @@ namespace :sneakers do
   end
 
   task :add_default_hooks do
-    after 'deploy:starting', 'sneakers:quiet'
-    after 'deploy:updated', 'sneakers:stop'
-    after 'deploy:reverted', 'sneakers:stop'
+    after 'deploy:starting',  'sneakers:quiet'
+    after 'deploy:updated',   'sneakers:stop'
+    after 'deploy:reverted',  'sneakers:stop'
     after 'deploy:published', 'sneakers:start'
   end
 
@@ -196,7 +192,9 @@ namespace :sneakers do
     on roles fetch(:sneakers_role) do |role|
       as_sneakers_user(role) do
         for_each_sneakers_process do |pid_file, idx|
-          start_sneakers(pid_file, idx) unless sneakers_pid_process_exists?(pid_file)
+          unless sneakers_pid_process_exists?(pid_file)
+            start_sneakers(pid_file, idx)
+          end
         end
       end
     end
@@ -205,6 +203,9 @@ namespace :sneakers do
   desc 'Restart sneakers'
   task :restart do
     invoke! 'sneakers:stop'
+    # It takes some time to stop serverengine processes and cleanup pidfiles.
+    # We should wait until pidfiles will be removed.
+    sleep 5
     invoke 'sneakers:start'
   end
 
@@ -246,25 +247,6 @@ namespace :sneakers do
             start_sneakers(pid_file, idx)
           end
         end
-      end
-    end
-  end
-
-  def template_sneakers(from, to, role)
-    [
-        File.join('lib', 'capistrano', 'templates', "#{from}-#{role.hostname}-#{fetch(:stage)}.rb"),
-        File.join('lib', 'capistrano', 'templates', "#{from}-#{role.hostname}.rb"),
-        File.join('lib', 'capistrano', 'templates', "#{from}-#{fetch(:stage)}.rb"),
-        File.join('lib', 'capistrano', 'templates', "#{from}.rb.erb"),
-        File.join('lib', 'capistrano', 'templates', "#{from}.rb"),
-        File.join('lib', 'capistrano', 'templates', "#{from}.erb"),
-        File.expand_path("../../templates/#{from}.rb.erb", __FILE__),
-        File.expand_path("../../templates/#{from}.erb", __FILE__)
-    ].each do |path|
-      if File.file?(path)
-        erb = File.read(path)
-        upload! StringIO.new(ERB.new(erb).result(binding)), to
-        break
       end
     end
   end
