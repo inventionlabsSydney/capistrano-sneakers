@@ -1,9 +1,9 @@
 namespace :load do
   task :defaults do
+    set :monit_bin, '/usr/bin/monit'
     set :sneakers_monit_default_hooks, true
     set :sneakers_monit_conf_dir, -> { '/etc/monit/conf.d' }
     set :sneakers_monit_use_sudo, true
-    set :sneakers_monit_bin, '/usr/bin/monit'
     set :sneakers_monit_templates_path, 'config/deploy/templates'
   end
 end
@@ -32,42 +32,42 @@ namespace :sneakers do
         mv_command = "mv #{fetch(:tmp_dir)}/monit.conf #{fetch(:sneakers_monit_conf_dir)}/#{sneakers_service_name}.conf"
         sudo_if_needed mv_command
 
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} reload"
+        sudo_if_needed "#{fetch(:monit_bin)} reload"
       end
     end
 
     desc 'Monitor Sneakers monit-service'
     task :monitor do
       on roles(fetch(:sneakers_role)) do
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} monitor #{sneakers_service_name}"
+        sudo_if_needed "#{fetch(:monit_bin)} monitor #{sneakers_service_name}"
       end
     end
 
     desc 'Unmonitor Sneakers monit-service'
     task :unmonitor do
       on roles(fetch(:sneakers_role)) do
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} unmonitor #{sneakers_service_name}"
+        sudo_if_needed "#{fetch(:monit_bin)} unmonitor #{sneakers_service_name}"
       end
     end
 
     desc 'Start Sneakers monit-service'
     task :start do
       on roles(fetch(:sneakers_role)) do
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} start #{sneakers_service_name}"
+        sudo_if_needed "#{fetch(:monit_bin)} start #{sneakers_service_name}"
       end
     end
 
     desc 'Stop Sneakers monit-service'
     task :stop do
       on roles(fetch(:sneakers_role)) do
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} stop #{sneakers_service_name}"
+        sudo_if_needed "#{fetch(:monit_bin)} stop #{sneakers_service_name}"
       end
     end
 
     desc 'Restart Sneakers monit-service'
     task :restart do
       on roles(fetch(:sneakers_role)) do
-        sudo_if_needed "#{fetch(:sneakers_monit_bin)} restart #{sneakers_service_name}"
+        sudo_if_needed "#{fetch(:monit_bin)} restart #{sneakers_service_name}"
       end
     end
 

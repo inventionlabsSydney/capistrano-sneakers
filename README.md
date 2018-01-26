@@ -32,7 +32,7 @@ Configurable options, shown here with defaults:
 # sneakers monit
 :sneakers_monit_conf_dir => '/etc/monit/conf.d'
 :sneakers_monit_use_sudo => true
-:sneakers_monit_bin => '/usr/bin/monit'
+:monit_bin => '/usr/bin/monit'
 :sneakers_monit_templates_path => 'config/deploy/templates'
 ```
 
