@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 
-- Add CHANGELOG @Tensho
+## 0.1.0
+
+- Mimicry capistrano-sidekiq @Tensho
+- Add sneakers_monit_templates_path @Tensho
 
 ## 0.0.2
 
