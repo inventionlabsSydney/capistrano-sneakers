@@ -1,6 +1,6 @@
 namespace :load do
   task :defaults do
-    set :sneakers_default_hooks, -> { true }
+    set :sneakers_default_hooks, true
 
     set :sneakers_pid, -> { File.join(shared_path, 'tmp', 'pids', 'sneakers.pid') }
     set :sneakers_env, -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
@@ -29,34 +29,151 @@ namespace :deploy do
 end
 
 namespace :sneakers do
-  def for_each_sneakers_process(reverse = false, &block)
-    pids = processes_sneakers_pids
-    pids.reverse! if reverse
-    pids.each_with_index do |pid_file, idx|
-      within current_path do
+  task :add_default_hooks do
+    after 'deploy:starting',  'sneakers:quiet'
+    after 'deploy:updated',   'sneakers:stop'
+    after 'deploy:reverted',  'sneakers:stop'
+    after 'deploy:published', 'sneakers:start'
+  end
+
+  desc 'Quiet sneakers (stop processing new tasks)'
+  task :quiet do
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        if test("[ -d #{current_path} ]")
+          each_process_with_index(true) do |pid_file, idx|
+            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+              quiet_sneakers(pid_file)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  desc 'Stop sneakers'
+  task :stop do
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        if test("[ -d #{current_path} ]")
+          each_process_with_index(true) do |pid_file, idx|
+            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+              stop_sneakers(pid_file)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  desc 'Start sneakers'
+  task :start do
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless pid_file_exists?(pid_file) && process_exists?(pid_file)
+            start_sneakers(pid_file, idx)
+          end
+        end
+      end
+    end
+  end
+
+  desc 'Restart sneakers'
+  task :restart do
+    invoke! 'sneakers:stop'
+    # It takes some time to stop serverengine processes and cleanup pidfiles.
+    # We should wait until pidfiles will be removed.
+    sleep 5
+    invoke 'sneakers:start'
+  end
+
+  desc 'Rolling-restart sneakers'
+  task :rolling_restart do
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        each_process_with_index(true) do |pid_file, idx|
+          if pid_file_exists?(pid_file) && process_exists?(pid_file)
+            stop_sneakers(pid_file)
+          end
+          start_sneakers(pid_file, idx)
+        end
+      end
+    end
+  end
+
+  # Delete any pid file not in use
+  task :cleanup do
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless process_exists?(pid_file)
+            if pid_file_exists?(pid_file)
+              execute "rm #{pid_file}"
+            end
+          end
+        end
+      end
+    end
+  end
+
+  # TODO : Don't start if all proccess are off, raise warning.
+  desc 'Respawn missing sneakers proccesses'
+  task :respawn do
+    invoke 'sneakers:cleanup'
+    on roles fetch(:sneakers_roles) do |role|
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless pid_file_exists?(pid_file)
+            start_sneakers(pid_file, idx)
+          end
+        end
+      end
+    end
+  end
+
+  def each_process_with_index(reverse = false, &block)
+    _pid_files = pid_files
+    _pid_files.reverse! if reverse
+    _pid_files.each_with_index do |pid_file, idx|
+      within release_path do
         yield(pid_file, idx)
       end
     end
   end
 
-  def processes_sneakers_pids
-    pids = []
-    raise "sneaker_processes is nil class, cannot continue, please [set :sneaker_processes]" if fetch(:sneakers_processes).nil?
-    fetch(:sneakers_processes).times do |idx|
-      pids.push (idx.zero? && fetch(:sneakers_processes) <= 1) ?
-                    fetch(:sneakers_pid) :
-                    fetch(:sneakers_pid).gsub(/\.pid$/, "-#{idx}.pid")
-
+  def pid_files
+    sneakers_roles = Array(fetch(:sneakers_roles))
+    sneakers_roles.select! { |role| host.roles.include?(role) }
+    sneakers_roles.flat_map do |role|
+      processes = fetch(:sneakers_processes)
+      if processes == 1
+        fetch(:sneakers_pid)
+      else
+        Array.new(processes) { |idx| fetch(:sneakers_pid).gsub(/\.pid$/, "-#{idx}.pid") }
+      end
     end
-    pids
   end
 
-  def sneakers_pid_process_exists?(pid_file)
-    sneakers_pid_file_exists?(pid_file) and test(:kill, "-0 $( cat #{pid_file} )")
-  end
-
-  def sneakers_pid_file_exists?(pid_file)
+  def pid_file_exists?(pid_file)
     test(*("[ -f #{pid_file} ]").split(' '))
+  end
+
+  def process_exists?(pid_file)
+    test(*("kill -0 $( cat #{pid_file} )").split(' '))
+  end
+
+  def quiet_sneakers(pid_file)
+    if fetch(:sneakers_use_signals) || fetch(:sneakers_run_config)
+      execute :kill, "-USR1 `cat #{pid_file}`"
+    else
+      begin
+        execute :bundle, :exec, :sneakersctl, 'quiet', "#{pid_file}"
+      rescue SSHKit::Command::Failed
+        # If gems are not installed eq(first deploy) and sneakers_default_hooks as active
+        warn 'sneakersctl not found (ignore if this is the first deploy)'
+      end
+    end
   end
 
   def stop_sneakers(pid_file)
@@ -71,19 +188,6 @@ namespace :sneakers do
         end
       else
         execute :bundle, :exec, :sneakersctl, 'stop', "#{pid_file}", fetch(:sneakers_timeout)
-      end
-    end
-  end
-
-  def quiet_sneakers(pid_file)
-    if fetch(:sneakers_use_signals) || fetch(:sneakers_run_config)
-      execute :kill, "-USR1 `cat #{pid_file}`"
-    else
-      begin
-        execute :bundle, :exec, :sneakersctl, 'quiet', "#{pid_file}"
-      rescue SSHKit::Command::Failed
-        # If gems are not installed eq(first deploy) and sneakers_default_hooks as active
-        warn 'sneakersctl not found (ignore if this is the first deploy)'
       end
     end
   end
@@ -103,7 +207,7 @@ namespace :sneakers do
     end
   end
 
-  def as_sneakers_user(role, &block)
+  def switch_user(role, &block)
     user = sneakers_user(role)
     if user == role.user
       block.call
@@ -117,106 +221,5 @@ namespace :sneakers do
   def sneakers_user(role)
     properties = role.properties
     properties.fetch(:sneakers_user) || fetch(:sneakers_user) || properties.fetch(:run_as) || role.user
-  end
-
-  task :add_default_hooks do
-    after 'deploy:starting',  'sneakers:quiet'
-    after 'deploy:updated',   'sneakers:stop'
-    after 'deploy:reverted',  'sneakers:stop'
-    after 'deploy:published', 'sneakers:start'
-  end
-
-  desc 'Quiet sneakers (stop processing new tasks)'
-  task :quiet do
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        if test("[ -d #{current_path} ]") # fixes #11
-          for_each_sneakers_process(true) do |pid_file, idx|
-            if sneakers_pid_process_exists?(pid_file)
-              quiet_sneakers(pid_file)
-            end
-          end
-        end
-      end
-    end
-  end
-
-  desc 'Stop sneakers'
-  task :stop do
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        if test("[ -d #{current_path} ]")
-          for_each_sneakers_process(true) do |pid_file, idx|
-            if sneakers_pid_process_exists?(pid_file)
-              stop_sneakers(pid_file)
-            end
-          end
-        end
-      end
-    end
-  end
-
-  desc 'Start sneakers'
-  task :start do
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        for_each_sneakers_process do |pid_file, idx|
-          unless sneakers_pid_process_exists?(pid_file)
-            start_sneakers(pid_file, idx)
-          end
-        end
-      end
-    end
-  end
-
-  desc 'Restart sneakers'
-  task :restart do
-    invoke! 'sneakers:stop'
-    # It takes some time to stop serverengine processes and cleanup pidfiles.
-    # We should wait until pidfiles will be removed.
-    sleep 5
-    invoke 'sneakers:start'
-  end
-
-  desc 'Rolling-restart sneakers'
-  task :rolling_restart do
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        for_each_sneakers_process(true) do |pid_file, idx|
-          if sneakers_pid_process_exists?(pid_file)
-            stop_sneakers(pid_file)
-          end
-          start_sneakers(pid_file, idx)
-        end
-      end
-    end
-  end
-
-  # Delete any pid file not in use
-  task :cleanup do
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        for_each_sneakers_process do |pid_file, idx|
-          if sneakers_pid_file_exists?(pid_file)
-            execute "rm #{pid_file}" unless sneakers_pid_process_exists?(pid_file)
-          end
-        end
-      end
-    end
-  end
-
-  # TODO : Don't start if all proccess are off, raise warning.
-  desc 'Respawn missing sneakers proccesses'
-  task :respawn do
-    invoke 'sneakers:cleanup'
-    on roles fetch(:sneakers_role) do |role|
-      as_sneakers_user(role) do
-        for_each_sneakers_process do |pid_file, idx|
-          unless sneakers_pid_file_exists?(pid_file)
-            start_sneakers(pid_file, idx)
-          end
-        end
-      end
-    end
   end
 end
