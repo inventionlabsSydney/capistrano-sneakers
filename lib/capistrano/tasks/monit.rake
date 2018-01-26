@@ -1,5 +1,6 @@
 namespace :load do
   task :defaults do
+    set :sneakers_monit_default_hooks, true
     set :sneakers_monit_conf_dir, -> { '/etc/monit/conf.d' }
     set :sneakers_monit_use_sudo, true
     set :sneakers_monit_bin, '/usr/bin/monit'
@@ -7,8 +8,21 @@ namespace :load do
   end
 end
 
+namespace :deploy do
+  before :starting, :check_sidekiq_monit_hooks do
+    if fetch(:sneakers_default_hooks) && fetch(:sneakers_monit_default_hooks)
+      invoke 'sneakers:monit:add_default_hooks'
+    end
+  end
+end
+
 namespace :sneakers do
   namespace :monit do
+    task :add_default_hooks do
+      before 'deploy:updating', 'sneakers:monit:unmonitor'
+      after 'deploy:published', 'sneakers:monit:monitor'
+    end
+
     desc 'Config Sneakers monit-service'
     task :config do
       on roles(fetch(:sneakers_role)) do |role|
@@ -56,9 +70,6 @@ namespace :sneakers do
         sudo_if_needed "#{fetch(:sneakers_monit_bin)} restart #{sneakers_service_name}"
       end
     end
-
-    before 'deploy:updating', 'sneakers:monit:unmonitor'
-    after 'deploy:published', 'sneakers:monit:monitor'
 
     def sneakers_service_name
       fetch(:sneakers_service_name, "sneakers_#{fetch(:application)}_#{fetch(:sneakers_env)}")
