@@ -27,7 +27,7 @@ Configurable options, shown here with defaults:
 :sneakers_pid => File.join(shared_path, 'tmp', 'pids', 'sneakers.pid') # ensure this path exists in production before deploying
 :sneakers_env => fetch(:rack_env, fetch(:rails_env, fetch(:stage)))
 :sneakers_log => File.join(shared_path, 'log', 'sneakers.log')
-:sneakers_role => :app
+:sneakers_roles => :app
 :sneakers_processes => 1
 # sneakers monit
 :sneakers_monit_conf_dir => '/etc/monit/conf.d'

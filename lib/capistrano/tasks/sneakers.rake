@@ -7,7 +7,7 @@ namespace :load do
     set :sneakers_log, -> { File.join(shared_path, 'log', 'sneakers.log') }
     # set :sneakers_timeout, -> 10
     # TODO: Rename to plural
-    set :sneakers_role, [:app]
+    set :sneakers_roles, [:app]
     set :sneakers_processes, 1
     set :sneakers_workers, false # if this is false it will cause Capistrano to exit
     # rename to sneakers_config

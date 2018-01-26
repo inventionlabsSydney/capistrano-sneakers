@@ -25,7 +25,7 @@ namespace :sneakers do
 
     desc 'Config Sneakers monit-service'
     task :config do
-      on roles(fetch(:sneakers_role)) do |role|
+      on roles(fetch(:sneakers_roles)) do |role|
         @role = role
         upload_sneakers_template 'sneakers_monit', "#{fetch(:tmp_dir)}/monit.conf", @role
 
@@ -38,35 +38,35 @@ namespace :sneakers do
 
     desc 'Monitor Sneakers monit-service'
     task :monitor do
-      on roles(fetch(:sneakers_role)) do
+      on roles(fetch(:sneakers_roles)) do
         sudo_if_needed "#{fetch(:monit_bin)} monitor #{sneakers_service_name}"
       end
     end
 
     desc 'Unmonitor Sneakers monit-service'
     task :unmonitor do
-      on roles(fetch(:sneakers_role)) do
+      on roles(fetch(:sneakers_roles)) do
         sudo_if_needed "#{fetch(:monit_bin)} unmonitor #{sneakers_service_name}"
       end
     end
 
     desc 'Start Sneakers monit-service'
     task :start do
-      on roles(fetch(:sneakers_role)) do
+      on roles(fetch(:sneakers_roles)) do
         sudo_if_needed "#{fetch(:monit_bin)} start #{sneakers_service_name}"
       end
     end
 
     desc 'Stop Sneakers monit-service'
     task :stop do
-      on roles(fetch(:sneakers_role)) do
+      on roles(fetch(:sneakers_roles)) do
         sudo_if_needed "#{fetch(:monit_bin)} stop #{sneakers_service_name}"
       end
     end
 
     desc 'Restart Sneakers monit-service'
     task :restart do
-      on roles(fetch(:sneakers_role)) do
+      on roles(fetch(:sneakers_roles)) do
         sudo_if_needed "#{fetch(:monit_bin)} restart #{sneakers_service_name}"
       end
     end
