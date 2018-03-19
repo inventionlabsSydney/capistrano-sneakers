@@ -9,7 +9,7 @@ namespace :load do
 end
 
 namespace :deploy do
-  before :starting, :check_sidekiq_monit_hooks do
+  before :starting, :check_sneakers_monit_hooks do
     if fetch(:sneakers_default_hooks) && fetch(:sneakers_monit_default_hooks)
       invoke 'sneakers:monit:add_default_hooks'
     end
