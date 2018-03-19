@@ -14,7 +14,7 @@ module Capistrano
             banner: "path to templates"
 
           def copy_template
-            copy_file "sneakers_monit.conf.erb", "#{templates_path}/sidekiq_monit.erb"
+            copy_file "sneakers_monit.conf.erb", "#{templates_path}/sneakers_monit.erb"
           end
 
         end
