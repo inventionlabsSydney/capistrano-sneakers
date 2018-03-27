@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "capistrano-sneakers"
   spec.version       = Capistrano::Sneakers::VERSION
   spec.authors       = ["Karl Kloppenborg, Andrew Babichev, NaixSpirit"]
-  spec.email         = ["karl@hyperconnect.com.au", "andrew.babichev@gmail.com", "neverlandxy.naix@gmail.com"]
+  spec.email         = ["k@rl.ag", "andrew.babichev@gmail.com", "neverlandxy.naix@gmail.com"]
   spec.summary       = %q{Sneakers integration for Capistrano}
   spec.description   = %q{Sneakers integration for Capistrano}
   spec.homepage      = "https://github.com/inventionlabsSydney/capistrano-sneakers"
