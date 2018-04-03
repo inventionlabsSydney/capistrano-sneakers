@@ -39,14 +39,23 @@ namespace :sneakers do
     desc 'Monitor Sneakers monit-service'
     task :monitor do
       on roles(fetch(:sneakers_roles)) do
-        sudo_if_needed "#{fetch(:monit_bin)} monitor #{sneakers_service_name}"
+        begin
+          sudo_if_needed "#{fetch(:monit_bin)} monitor #{sneakers_service_name}"
+        rescue
+          invoke 'sneakers:monit:config'
+          sudo_if_needed "#{fetch(:monit_bin)} monitor #{sneakers_service_name}"
+        end
       end
     end
 
     desc 'Unmonitor Sneakers monit-service'
     task :unmonitor do
       on roles(fetch(:sneakers_roles)) do
-        sudo_if_needed "#{fetch(:monit_bin)} unmonitor #{sneakers_service_name}"
+        begin
+          sudo_if_needed "#{fetch(:monit_bin)} unmonitor #{sneakers_service_name}"
+        rescue
+          # no worries here
+        end
       end
     end
 
