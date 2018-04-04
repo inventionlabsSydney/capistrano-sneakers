@@ -1,7 +1,5 @@
-# Monit configuration for Sneakers
-# Service name: <%= sneakers_service_name %>
-#
-check process <%= sneakers_service_name %>
+# Monit configuration for Sneakers : <%= fetch(:application) %>
+check process <%= sneakers_monit_service_name %>
   with pidfile "<%= fetch(:sneakers_pid) %>"
   start program = "/usr/bin/sudo -iu <%= sneakers_user(@role) %> /bin/bash -c 'cd <%= current_path %> && RAILS_ENV=<%= fetch(:sneakers_env) %> WORKERS=<%= fetch(:sneakers_workers).join(',') %> <%= SSHKit.config.command_map[:rake] %> sneakers:run'"
   stop program = "/usr/bin/sudo -iu <%= sneakers_user(@role) %> /bin/bash -c 'kill -SIGTERM `cat <%= fetch(:sneakers_pid) %>`'"
