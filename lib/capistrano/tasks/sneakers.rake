@@ -1,4 +1,5 @@
-require 'lib/sneakers_helper'
+require 'capistrano/sneakers/helper_methods'
+include Capistrano::Sneakers::HelperMethods
 
 namespace :load do
   task :defaults do
@@ -41,11 +42,11 @@ namespace :sneakers do
   desc 'Quiet sneakers (stop processing new tasks)'
   task :quiet do
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
+      switch_user(role) do
         if test("[ -d #{current_path} ]")
-          SneakersHelper.each_process_with_index(true) do |pid_file, idx|
-            if SneakersHelper.pid_file_exists?(pid_file) && SneakersHelper.process_exists?(pid_file)
-              SneakersHelper.quiet_sneakers(pid_file)
+          each_process_with_index(true) do |pid_file, idx|
+            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+              quiet_sneakers(pid_file)
             end
           end
         end
@@ -56,11 +57,11 @@ namespace :sneakers do
   desc 'Stop sneakers'
   task :stop do
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
+      switch_user(role) do
         if test("[ -d #{current_path} ]")
-          SneakersHelper.each_process_with_index(true) do |pid_file, idx|
-            if SneakersHelper.pid_file_exists?(pid_file) && SneakersHelper.process_exists?(pid_file)
-              SneakersHelper.stop_sneakers(pid_file)
+          each_process_with_index(true) do |pid_file, idx|
+            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+              stop_sneakers(pid_file)
             end
           end
         end
@@ -71,10 +72,10 @@ namespace :sneakers do
   desc 'Start sneakers'
   task :start do
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
-        SneakersHelper.each_process_with_index do |pid_file, idx|
-          unless SneakersHelper.pid_file_exists?(pid_file) && SneakersHelper.process_exists?(pid_file)
-            SneakersHelper.start_sneakers(pid_file, idx)
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless pid_file_exists?(pid_file) && process_exists?(pid_file)
+            start_sneakers(pid_file, idx)
           end
         end
       end
@@ -93,12 +94,12 @@ namespace :sneakers do
   desc 'Rolling-restart sneakers'
   task :rolling_restart do
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
-        SneakersHelper.each_process_with_index(true) do |pid_file, idx|
-          if SneakersHelper.pid_file_exists?(pid_file) && SneakersHelper.process_exists?(pid_file)
-            SneakersHelper.stop_sneakers(pid_file)
+      switch_user(role) do
+        each_process_with_index(true) do |pid_file, idx|
+          if pid_file_exists?(pid_file) && process_exists?(pid_file)
+            stop_sneakers(pid_file)
           end
-          SneakersHelper.start_sneakers(pid_file, idx)
+          start_sneakers(pid_file, idx)
         end
       end
     end
@@ -107,10 +108,10 @@ namespace :sneakers do
   # Delete any pid file not in use
   task :cleanup do
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
-        SneakersHelper.each_process_with_index do |pid_file, idx|
-          unless SneakersHelper.process_exists?(pid_file)
-            if SneakersHelper.pid_file_exists?(pid_file)
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless process_exists?(pid_file)
+            if pid_file_exists?(pid_file)
               execute "rm #{pid_file}"
             end
           end
@@ -124,10 +125,10 @@ namespace :sneakers do
   task :respawn do
     invoke 'sneakers:cleanup'
     on roles fetch(:sneakers_roles) do |role|
-      SneakersHelper.switch_user(role) do
-        SneakersHelper.each_process_with_index do |pid_file, idx|
-          unless SneakersHelper.pid_file_exists?(pid_file)
-            SneakersHelper.start_sneakers(pid_file, idx)
+      switch_user(role) do
+        each_process_with_index do |pid_file, idx|
+          unless pid_file_exists?(pid_file)
+            start_sneakers(pid_file, idx)
           end
         end
       end
