@@ -42,10 +42,10 @@ namespace :sneakers do
   desc 'Quiet sneakers (stop processing new tasks)'
   task :quiet do
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
+      sneakers_switch_user(role) do
         if test("[ -d #{current_path} ]")
-          each_process_with_index(true) do |pid_file, idx|
-            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+          sneakers_each_process_with_index(true) do |pid_file, idx|
+            if pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
               quiet_sneakers(pid_file)
             end
           end
@@ -57,10 +57,10 @@ namespace :sneakers do
   desc 'Stop sneakers'
   task :stop do
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
+      sneakers_switch_user(role) do
         if test("[ -d #{current_path} ]")
-          each_process_with_index(true) do |pid_file, idx|
-            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+          sneakers_each_process_with_index(true) do |pid_file, idx|
+            if sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
               stop_sneakers(pid_file)
             end
           end
@@ -72,9 +72,9 @@ namespace :sneakers do
   desc 'Start sneakers'
   task :start do
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
-        each_process_with_index do |pid_file, idx|
-          unless pid_file_exists?(pid_file) && process_exists?(pid_file)
+      sneakers_switch_user(role) do
+        sneakers_each_process_with_index do |pid_file, idx|
+          unless sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
             start_sneakers(pid_file, idx)
           end
         end
@@ -94,9 +94,9 @@ namespace :sneakers do
   desc 'Rolling-restart sneakers'
   task :rolling_restart do
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
-        each_process_with_index(true) do |pid_file, idx|
-          if pid_file_exists?(pid_file) && process_exists?(pid_file)
+      sneakers_switch_user(role) do
+        sneakers_each_process_with_index(true) do |pid_file, idx|
+          if sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
             stop_sneakers(pid_file)
           end
           start_sneakers(pid_file, idx)
@@ -108,10 +108,10 @@ namespace :sneakers do
   # Delete any pid file not in use
   task :cleanup do
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
-        each_process_with_index do |pid_file, idx|
-          unless process_exists?(pid_file)
-            if pid_file_exists?(pid_file)
+      sneakers_switch_user(role) do
+        sneakers_each_process_with_index do |pid_file, idx|
+          unless sneakers_process_exists?(pid_file)
+            if sneakers_pid_file_exists?(pid_file)
               execute "rm #{pid_file}"
             end
           end
@@ -125,9 +125,9 @@ namespace :sneakers do
   task :respawn do
     invoke 'sneakers:cleanup'
     on roles fetch(:sneakers_roles) do |role|
-      switch_user(role) do
-        each_process_with_index do |pid_file, idx|
-          unless pid_file_exists?(pid_file)
+      sneakers_switch_user(role) do
+        sneakers_each_process_with_index do |pid_file, idx|
+          unless sneakers_pid_file_exists?(pid_file)
             start_sneakers(pid_file, idx)
           end
         end

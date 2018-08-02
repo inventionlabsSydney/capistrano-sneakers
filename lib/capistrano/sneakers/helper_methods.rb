@@ -1,8 +1,8 @@
 module Capistrano
   module Sneakers
     module HelperMethods
-      def each_process_with_index(reverse = false, &block)
-        _pid_files = pid_files
+      def sneakers_each_process_with_index(reverse = false, &block)
+        _pid_files = sneakers_pid_files
         _pid_files.reverse! if reverse
         _pid_files.each_with_index do |pid_file, idx|
           within release_path do
@@ -11,7 +11,7 @@ module Capistrano
         end
       end
 
-      def pid_files
+      def sneakers_pid_files
         sneakers_roles = Array(fetch(:sneakers_roles))
         sneakers_roles.select! { |role| host.roles.include?(role) }
         sneakers_roles.flat_map do |role|
@@ -24,11 +24,11 @@ module Capistrano
         end
       end
 
-      def pid_file_exists?(pid_file)
+      def sneakers_pid_file_exists?(pid_file)
         test(*("[ -f #{pid_file} ]").split(' '))
       end
 
-      def process_exists?(pid_file)
+      def sneakers_process_exists?(pid_file)
         test(*("kill -0 $( cat #{pid_file} )").split(' '))
       end
 
@@ -76,7 +76,7 @@ module Capistrano
         end
       end
 
-      def switch_user(role, &block)
+      def sneakers_switch_user(role, &block)
         user = sneakers_user(role)
         if user == role.user
           block.call
