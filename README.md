@@ -37,9 +37,12 @@ Configurable options, shown here with defaults:
 ```
 
 ## Contributors
-
+- [Karl Kloppenborg](https://github.com/inventionlabsSydney)
 - [Andrew Babichev](https://github.com/Tensho)
 - [NaixSpirit](https://github.com/NaixSpirit)
+- [hpetru](https://github.com/hpetru)
+- [jhollinger](https://github.com/jhollinger)
+- [redrick](https://github.com/redrick)
 
 ## Contributing
 
