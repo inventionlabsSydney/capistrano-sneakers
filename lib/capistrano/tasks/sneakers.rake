@@ -45,7 +45,7 @@ namespace :sneakers do
       sneakers_switch_user(role) do
         if test("[ -d #{current_path} ]")
           sneakers_each_process_with_index(true) do |pid_file, idx|
-            if pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
+            if sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
               quiet_sneakers(pid_file)
             end
           end
