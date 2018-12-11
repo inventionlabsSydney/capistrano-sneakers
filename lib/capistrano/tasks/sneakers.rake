@@ -9,6 +9,7 @@ namespace :load do
     set :sneakers_env, -> { fetch(:rack_env, fetch(:rails_env, fetch(:stage))) }
     set :sneakers_log, -> { File.join(shared_path, 'log', 'sneakers.log') }
     # set :sneakers_timeout, -> 10
+    set :sneakers_start_timeout, fetch(:sneakers_start_timeout) || 5
     # TODO: Rename to plural
     set :sneakers_roles, [:app]
     set :sneakers_processes, 1
@@ -72,10 +73,17 @@ namespace :sneakers do
   desc 'Start sneakers'
   task :start do
     on roles fetch(:sneakers_roles) do |role|
-      sneakers_switch_user(role) do
-        sneakers_each_process_with_index do |pid_file, idx|
-          unless sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
-            start_sneakers(pid_file, idx)
+      switch_user(role) do
+        check_interval = 0.5
+
+        each_process_with_index do |pid_file, idx|
+          (sneakers_start_timeout/check_interval).times do |index|
+            if pid_file_exists?(pid_file) && process_exists?(pid_file)
+              sleep(check_interval)
+              next
+            else
+              start_sneakers(pid_file, idx)
+            end
           end
         end
       end
@@ -87,7 +95,7 @@ namespace :sneakers do
     invoke! 'sneakers:stop'
     # It takes some time to stop serverengine processes and cleanup pidfiles.
     # We should wait until pidfiles will be removed.
-    sleep 5
+    # sleep 5
     invoke 'sneakers:start'
   end
 
