@@ -12,6 +12,7 @@ namespace :load do
     # TODO: Rename to plural
     set :sneakers_roles, [:app]
     set :sneakers_processes, 1
+    set :sneakers_force_start, false # send start signal even sneakers have not stopped, default false
     set :sneakers_workers, false # if this is false it will cause Capistrano to exit
     # rename to sneakers_config
     set :sneakers_run_config, true # if this is true sneakers will run with preconfigured /config/initializers/sneakers.rb
@@ -45,7 +46,7 @@ namespace :sneakers do
       sneakers_switch_user(role) do
         if test("[ -d #{current_path} ]")
           sneakers_each_process_with_index(true) do |pid_file, idx|
-            if pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
+            if sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
               quiet_sneakers(pid_file)
             end
           end
@@ -74,7 +75,7 @@ namespace :sneakers do
     on roles fetch(:sneakers_roles) do |role|
       sneakers_switch_user(role) do
         sneakers_each_process_with_index do |pid_file, idx|
-          unless sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file)
+          if fetch(:sneakers_force_start) || !(sneakers_pid_file_exists?(pid_file) && sneakers_process_exists?(pid_file))
             start_sneakers(pid_file, idx)
           end
         end

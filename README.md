@@ -29,6 +29,7 @@ Configurable options, shown here with defaults:
 :sneakers_log => File.join(shared_path, 'log', 'sneakers.log')
 :sneakers_roles => :app
 :sneakers_processes => 1
+:sneakers_force_start => false
 # sneakers monit
 :sneakers_monit_conf_dir => '/etc/monit/conf.d'
 :sneakers_monit_use_sudo => true
